@@ -52,7 +52,15 @@ Results land in `benchmark/results/<timestamp>/` as `raw.jsonl` (per-task record
 
 To run a single baseline: `BASELINES=sverklo,jcodemunch npm run bench:quick`.
 
+To run a single dataset (e.g. for fast iteration during development): `DATASETS=express npm run bench:quick`.
+
 To re-validate a competitor's published claim, point the harness at their fork and re-run. The task definitions in this repo are authoritative; the harness is a reference implementation.
+
+### Auto-bench CI on baseline PRs
+
+Every PR to [sverklo/sverklo](https://github.com/sverklo/sverklo) that touches `benchmark/src/baselines/**` automatically runs the harness against the express dataset (~30 tasks) and posts a results table back as a comment within ~10 minutes. Idempotent — re-running the workflow updates the same comment in place. Full results upload as a GitHub Actions artifact for raw inspection.
+
+Contributors don't need to run `npm run bench:quick` locally before opening the PR; CI does it. See [sverklo-bench#4](https://github.com/sverklo/sverklo-bench/issues/4) for the implementation notes and [.github/workflows/auto-bench.yml](https://github.com/sverklo/sverklo/blob/main/.github/workflows/auto-bench.yml) for the workflow source.
 
 ## Task definitions (copies for reference)
 

@@ -19,8 +19,11 @@ You implement `Baseline` (`name`, `setupForDataset`, `run(task)`, optional `tear
 
 1. Open a PR to [github.com/sverklo/sverklo](https://github.com/sverklo/sverklo) adding `benchmark/src/baselines/<your-tool>.ts`
 2. Register it in `benchmark/src/runner/run-primitive.ts`
-3. Run `BASELINES=<your-tool> npm run bench:quick` and include the `report.md` output in the PR
-4. We'll merge if (a) the baseline runs cleanly, (b) the implementation is faithful to your tool's intended use, and (c) it doesn't break existing baselines
+3. **Auto-bench CI runs on the PR** — see [#4](https://github.com/sverklo/sverklo-bench/issues/4). The workflow detects which baseline files changed, runs the harness against the express dataset (~30 tasks), and posts a results-table comment back to your PR within ~10 minutes. You don't need to run `npm run bench:quick` locally before opening the PR; CI does it.
+4. Inspect the comment, iterate. Full results upload as a GitHub Actions artifact for raw inspection.
+5. We'll merge if (a) the baseline runs cleanly, (b) the implementation is faithful to your tool's intended use, and (c) it doesn't break existing baselines.
+
+For the full 90-task suite (express + lodash + sverklo): run `npm run bench:quick` locally — too slow for free-tier CI runners.
 
 We will not refuse to bench a tool because it makes sverklo look bad. **The bench losing teaches the bench more than the bench winning.**
 
