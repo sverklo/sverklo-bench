@@ -2,7 +2,7 @@
 
 A public, reproducible benchmark for code-intelligence MCP servers and code-search baselines.
 
-**90 hand-verified tasks** across **3 OSS codebases** (sverklo, express 4.21.1, lodash 4.17.21), **4 task categories** (definition lookup, reference finding, file dependencies, dead code), **5 baselines** (naive grep, smart grep, [sverklo](https://github.com/sverklo/sverklo), [jcodemunch-mcp](https://github.com/jgravelle/jcodemunch-mcp), [GitNexus](https://github.com/abhigyanpatwari/GitNexus)).
+**120 hand-verified tasks** across **4 OSS codebases** (sverklo, express 4.21.1, lodash 4.17.21, requests 2.32.3), **4 task categories** (definition lookup, reference finding, file dependencies, dead code), **5 baselines** (naive grep, smart grep, [sverklo](https://github.com/sverklo/sverklo), [jcodemunch-mcp](https://github.com/jgravelle/jcodemunch-mcp), [GitNexus](https://github.com/abhigyanpatwari/GitNexus)).
 
 Reproducible from a fresh clone with one npm script.
 
@@ -14,17 +14,17 @@ If you build a code-intelligence MCP server, code-search tool, or retrieval syst
 
 ## Headline results (May 2026, sverklo v0.20.2)
 
-| baseline | n | F1 | P1 (def lookup) | P2 (ref finding) | P4 (file deps) | P5 (dead code) | avg input tokens | tools/task |
+| baseline | n | F1 | P1 (def lookup) | P2 (ref finding) | P4 (file deps) | avg input tokens | tools/task | audit grade |
 |---|---|---|---|---|---|---|---|---|
-| naive-grep | 90 | 0.29 | 0.10 | 0.18 | 0.53 | 0.67 | 20,278 | 6.5 |
-| smart-grep | 90 | 0.49 | 0.43 | **0.40** | 0.59 | 0.67 | 1,220 | 4.9 |
-| **sverklo** | 90 | **0.56** | 0.73 | 0.25 | **0.71** | 0.67 | 469 | **1.0** |
-| jcodemunch | 90 | 0.32 | **0.73** | 0.00 | 0.46 | 0.00 | 1,267 | 1.2 |
-| gitnexus | 90 | 0.25 | 0.27 | 0.00 | 0.30 | 0.67 | **372** | 1.2 |
+| **sverklo** | 120 | **0.58** | 0.70 | 0.29 | **0.78** | 498 | **1.0** | B |
+| smart-grep | 120 | 0.41 | 0.33 | **0.30** | 0.46 | 963 | 4.1 | — |
+| jcodemunch | 120 | 0.32 | **0.78** | 0.00 | 0.34 | 1,178 | 1.2 | C |
+| naive-grep | 120 | 0.27 | 0.07 | 0.14 | 0.42 | 24,194 | 6.1 | — |
+| gitnexus | 120 | 0.24 | 0.23 | 0.00 | 0.25 | **333** | 1.2 | F |
 
-**Headline:** Sverklo leads overall F1 (0.56 vs smart-grep 0.49). Sverklo and jcodemunch tie on definition lookup (0.73). Smart-grep wins reference finding (0.40, with sverklo at 0.25 — the only category where a tuned ripgrep beats a hybrid retriever). Sverklo wins file-dependency reasoning (0.71). All tools tie at 0.67 on dead code on the empty-expected pattern.
+**Headline:** Sverklo leads overall F1 (0.58 vs smart-grep 0.41). Jcodemunch beats sverklo on P1 definition lookup outright (0.78 vs 0.70). Smart-grep beats sverklo on P2 reference finding (0.30 vs 0.29). Sverklo wins file-dependency reasoning by a wide margin (0.78 vs jcodemunch 0.34). GitNexus wins token cost (333 avg). Sverklo's audit grade is B with an F on coupling — `indexer.ts` has fan-in 60. P5 dead-code is omitted from the headline because every baseline returns the same empty-expected score (0.67), which makes the column non-discriminating; per-category numbers are still in the per-task output.
 
-[Full per-category breakdown and the slice where each baseline loses →](https://sverklo.com/bench/)
+[Full ranking page →](https://sverklo.com/mcp/) · [Per-category breakdown and the slice where each baseline loses →](https://sverklo.com/bench/)
 
 ## Methodology
 
@@ -69,11 +69,13 @@ The authoritative ground truth lives at [github.com/sverklo/sverklo/tree/main/be
 - [tasks/sverklo.jsonl](./tasks/sverklo.jsonl) — 30 tasks against the sverklo monorepo (TS)
 - [tasks/express.gen.ts](./tasks/express.gen.ts) — 30-task generator against express 4.21.1 (CommonJS, modular)
 - [tasks/lodash.gen.ts](./tasks/lodash.gen.ts) — 30-task generator against lodash 4.17.21 (single-file UMD/IIFE — different shape)
+- [tasks/requests.gen.ts](./tasks/requests.gen.ts) — 30-task generator against requests 2.32.3 (Python, the first non-JS dataset in the bench)
 
 Datasets covered:
 - **sverklo monorepo** — TypeScript, modular, the most representative real-world repo (it's the project's own codebase)
 - **express 4.21.1** — JavaScript, modular CommonJS, well-known structure
 - **lodash 4.17.21** — JavaScript, single 17K-line UMD/IIFE wrapper. Pathological for parsers — exposed blind spots in both jcodemunch (size cap, IIFE call-graph fallback) and sverklo (regex brace counter mis-counting inside string literals) within 36 hours of being added to the bench.
+- **requests 2.32.3** — Python. Surfaced a real bug in sverklo's own parser within hours of being added: relative imports (`from .adapters import HTTPAdapter`) were being emitted as the literal string `.adapters` instead of being resolved against the importing file's directory. Fix landed in the same commit as the dataset; sverklo P4 on requests went 0.10 → 1.00. The dataset earned its slot by surfacing a parser bug that no JS-only dataset would have.
 
 ## How to add a baseline
 
@@ -88,7 +90,9 @@ The bench task files are CC-BY-4.0 — reuse them in academic work, in your own 
 ---
 
 **Related:**
-- [github.com/sverklo/sverklo](https://github.com/sverklo/sverklo) — the MCP server being benchmarked (the "sverklo" baseline above)
-- [sverklo.com/bench/](https://sverklo.com/bench/) — rendered results page with the per-category breakdowns
+- [github.com/sverklo/sverklo](https://github.com/sverklo/sverklo) — the MCP server being benchmarked (the "sverklo" baseline above) and the home of the bench runner + baseline implementations under `benchmark/`
+- [sverklo.com/mcp/](https://sverklo.com/mcp/) — the public MCP code-intel ranking page (sortable, with audit grades)
+- [sverklo.com/bench/](https://sverklo.com/bench/) — per-category breakdowns and the slices where each baseline loses
 - [Issue #25](https://github.com/sverklo/sverklo/issues/25) — original "compare against jcodemunch and GitNexus" thread that drove the May 2026 expansion
+- [Issue #29](https://github.com/sverklo/sverklo/issues/29) — late-interaction rerank experiment; close-out writeup at [sverklo.com/blog/late-interaction-rerank-made-our-f1-worse/](https://sverklo.com/blog/late-interaction-rerank-made-our-f1-worse/)
 - [Zenodo paper, CC-BY 4.0](https://doi.org/10.5281/zenodo.19802051) — peer-reviewable methodology writeup
