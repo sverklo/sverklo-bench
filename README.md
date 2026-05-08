@@ -12,6 +12,30 @@ When you publish a benchmark and your competitor responds by shipping fixes with
 
 If you build a code-intelligence MCP server, code-search tool, or retrieval system in this neighborhood, **you can submit a baseline implementation here** and we'll run it on the same task suite. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
+## Add your tool in four steps
+
+You don't need to download datasets, ground truth, or anything else manually. The harness fetches everything on demand.
+
+1. Fork [github.com/sverklo/sverklo](https://github.com/sverklo/sverklo) and add `benchmark/src/baselines/<your-tool>.ts` implementing the [`Baseline` interface](./CONTRIBUTING.md#the-baseline-interface).
+2. Register it in `benchmark/src/runner/run-primitive.ts` (one line — the existing baselines show the shape).
+3. Open a PR. Auto-bench CI runs your baseline against the express dataset (~30 tasks) and posts a results-table comment back within ~10 minutes. You don't run anything locally.
+4. Iterate against the comment until you're happy, we merge, results land on the [next refresh](https://sverklo.com/mcp/).
+
+Reference baselines live in [`benchmark/src/baselines/`](https://github.com/sverklo/sverklo/tree/main/benchmark/src/baselines): `sverklo.ts` (MCP stdio), `jcodemunch.ts` (MCP stdio via uvx), `gitnexus.ts` (CLI), `naive-grep.ts` (pure shell). Pick the closest shape to your tool and start from there.
+
+## Where the data lives
+
+Common confusion: there is no "dataset repo" you clone separately. Datasets are fetched automatically by `npm run bench:quick` from upstream at pinned tags:
+
+| dataset | source | tag |
+|---|---|---|
+| express | [expressjs/express](https://github.com/expressjs/express) | 4.21.1 |
+| lodash | [lodash/lodash](https://github.com/lodash/lodash) | 4.17.21 |
+| requests | [psf/requests](https://github.com/psf/requests) | v2.32.3 |
+| sverklo | [sverklo/sverklo](https://github.com/sverklo/sverklo) (this monorepo) | current HEAD |
+
+Cloned into `benchmark/.cache/<dataset>/` on first run. Re-runs reuse the cache. Task definitions for each dataset are mirrored in [`tasks/`](./tasks/) below.
+
 ## Headline results (May 2026, sverklo v0.20.2)
 
 | baseline | n | F1 | P1 (def lookup) | P2 (ref finding) | P4 (file deps) | avg input tokens | tools/task | audit grade |
@@ -79,7 +103,7 @@ Datasets covered:
 
 ## How to add a baseline
 
-If you maintain a code-intelligence tool and want it benchmarked here, see [CONTRIBUTING.md](./CONTRIBUTING.md). The TL;DR: implement the `Baseline` interface in the main sverklo repo (one ~150-line file mapping task categories to tool calls), open a PR, and we'll cross-link it here.
+Quick walkthrough is at the [top of this README](#add-your-tool-in-four-steps). The full process — including the [`Baseline` interface contract](./CONTRIBUTING.md#the-baseline-interface), what we will and won't accept, and how methodology critique gets handled — is in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
