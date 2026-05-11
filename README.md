@@ -2,7 +2,7 @@
 
 A public, reproducible benchmark for code-intelligence MCP servers and code-search baselines.
 
-**120 hand-verified tasks** across **4 OSS codebases** (sverklo, express 4.21.1, lodash 4.17.21, requests 2.32.3), **4 task categories** (definition lookup, reference finding, file dependencies, dead code), **5 baselines** (naive grep, smart grep, [sverklo](https://github.com/sverklo/sverklo), [jcodemunch-mcp](https://github.com/jgravelle/jcodemunch-mcp), [GitNexus](https://github.com/abhigyanpatwari/GitNexus)).
+**150 hand-verified tasks** across **5 OSS codebases** (sverklo, express 4.21.1, lodash 4.17.21, requests 2.32.3, flask 3.0.3), **4 task categories** (definition lookup, reference finding, file dependencies, dead code), **5 baselines** (naive grep, smart grep, [sverklo](https://github.com/sverklo/sverklo), [jcodemunch-mcp](https://github.com/jgravelle/jcodemunch-mcp), [GitNexus](https://github.com/abhigyanpatwari/GitNexus)).
 
 Reproducible from a fresh clone with one npm script.
 
@@ -100,10 +100,21 @@ Datasets covered:
 - **express 4.21.1** — JavaScript, modular CommonJS, well-known structure
 - **lodash 4.17.21** — JavaScript, single 17K-line UMD/IIFE wrapper. Pathological for parsers — exposed blind spots in both jcodemunch (size cap, IIFE call-graph fallback) and sverklo (regex brace counter mis-counting inside string literals) within 36 hours of being added to the bench.
 - **requests 2.32.3** — Python. Surfaced a real bug in sverklo's own parser within hours of being added: relative imports (`from .adapters import HTTPAdapter`) were being emitted as the literal string `.adapters` instead of being resolved against the importing file's directory. Fix landed in the same commit as the dataset; sverklo P4 on requests went 0.10 → 1.00. The dataset earned its slot by surfacing a parser bug that no JS-only dataset would have.
+- **flask 3.0.3** — Python web framework. Added by [@yallalaraja](https://github.com/yallalaraja) in [PR #33](https://github.com/sverklo/sverklo/pull/33) — the first unaffiliated community contribution. Tests decorator-heavy patterns (Blueprint registration, class-based views, dynamic route binding) and module-level LocalProxy globals (`flask.request`) that pure-function Python like requests doesn't exercise. Surfaced three real bugs within the same review cycle: a regex parser that truncated functions whose signatures contained `Array<{...}>` type annotations (sverklo `findBraceEnd`, +464 symbol refs recovered repo-wide), `audit --format json` contaminating stdout with model-download progress (broke CI JSON parsing), and `auto-bench.yml` + `audit-self.yml` not handling fork-PR `GITHUB_TOKEN` write restrictions. All four fixes shipped in sverklo v0.20.17–v0.20.18 alongside the merge.
 
 ## How to add a baseline
 
 Quick walkthrough is at the [top of this README](#add-your-tool-in-four-steps). The full process — including the [`Baseline` interface contract](./CONTRIBUTING.md#the-baseline-interface), what we will and won't accept, and how methodology critique gets handled — is in [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Contributors
+
+The bench is open infrastructure. Datasets and baselines come from the community as much as from the maintainer.
+
+- [@yallalaraja](https://github.com/yallalaraja) — Flask 3.0.3 dataset (30 hand-verified tasks). First unaffiliated contribution. [PR #33](https://github.com/sverklo/sverklo/pull/33).
+- [@HaleTom](https://github.com/HaleTom) — surfaced jcodemunch-mcp as a baseline candidate. [Issue #25](https://github.com/sverklo/sverklo/issues/25).
+- [@jgravelle](https://github.com/jgravelle) — maintainer of [jcodemunch-mcp](https://github.com/jgravelle/jcodemunch-mcp), reviewed the early bench methodology, publicly endorsed an LMSYS-style arena evolution on r/mcp.
+
+PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for the baseline interface and dataset format. Open [an issue](https://github.com/sverklo/sverklo-bench/issues) before starting work on a baseline so we can flag any methodology concerns early.
 
 ## License
 
