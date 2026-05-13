@@ -10,7 +10,7 @@ Reproducible from a fresh clone with one npm script.
 
 When you publish a benchmark and your competitor responds by shipping fixes within hours, that's the bench working as intended. This repo is the eval surface that loop runs on. It's split out from [github.com/sverklo/sverklo](https://github.com/sverklo/sverklo) (the primary code-intelligence MCP server) so the methodology gets its own audit trail, its own contributor PRs, and its own credibility signal independent of the tool that wrote it.
 
-If you build a code-intelligence MCP server, code-search tool, or retrieval system in this neighborhood, **you can submit a baseline implementation here** and we'll run it on the same task suite. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+If you build a code-intelligence MCP server, code-search tool, or retrieval system in this neighborhood, **you can submit a baseline implementation here** and we'll run it on the same task suite. See [CONTRIBUTING.md](./CONTRIBUTING.md). The category spec the bench is being measured under is [RFC-001: Code-Intel Bracket](./RFC-001-code-intel-bracket.md) (open for comment until 2026-05-21).
 
 ## Add your tool in four steps
 
